@@ -4,7 +4,7 @@ Title: Survival Analysis using Copula's
 Version: 0.5.1
 Date: 2017-05-04
 Author: Leen Prenen, Roel Braekers, Luc Duchateau and Ewoud De Troyer
-Maintainer: Leen Prenen <leen.prenen@uhasselt.be>
+Maintainer: Roel Braekers <roel.braekers@uhasselt.be>
 Description: Survival analysis for unbalanced clusters using archimedes
     copula's.
 Imports: survival, stats, utils
