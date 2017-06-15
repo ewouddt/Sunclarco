@@ -12,13 +12,14 @@ estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise
 		if(marginal=="Weibull"){
 			#lambda, rho, beta's
 						
-			temp_formula <- Surv(data[,time],data[,status]) ~ cluster(data[,clusters])
+			eval(parse(text=paste0("temp_formula <- Surv(",time,",",status,") ~ cluster(",clusters,")")))
+			
 			for(i.covariate in covariates){
-				temp_formula <- update(temp_formula, ~ . + data[,i.covariate])
+				eval(parse(text=paste0("temp_formula <- update(temp_formula, ~ . + ",i.covariate,")")))
 			}
 			
-			Surv_result   <- survreg(temp_formula,dist="weibull",robust=TRUE)
-			
+			Surv_result   <- survreg(temp_formula,dist="weibull",robust=TRUE,data=data)
+								
 			mu <- Surv_result$coeff[1]
 			gammas <- Surv_result$coeff[2:length(Surv_result$coeff)]
 			sigma <- Surv_result$scale
@@ -44,14 +45,14 @@ estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise
 	if(marginal=="PiecewiseExp"){
 		
 #			lambda's, beta's
-		temp_formula <- Surv(data[,time],data[,status]) ~ data[,covariates[1]]
-		if(length(covariates)>1){
-			for(i.covariate in covariates[-1]){
-				temp_formula <- update(temp_formula, ~ . + data[,i.covariate])
-			}
+			
+		eval(parse(text=paste0("temp_formula <- Surv(",time,",",status,") ~ cluster(",clusters,")")))
+		
+		for(i.covariate in covariates){
+			eval(parse(text=paste0("temp_formula <- update(temp_formula, ~ . + ",i.covariate,")")))
 		}
 		
-		Surv_result   <- survreg(temp_formula,dist="weibull",scale=1)
+		Surv_result   <- survreg(temp_formula,dist="weibull",scale=1,data=data)
 		
 		
 		mu <- Surv_result$coeff[1]

@@ -229,7 +229,7 @@ jack_2stage_coxCL <- function(data,covariates,status,time,clusters,ClusterData,C
 			
 		}
 		
-		res_jack <- optim(init.values,loglik.2stagejack_CL,ClusterData=ClusterData,ClusterDataList=ClusterDataList,status=status,k=k,control=list(maxit=3000))
+		res_jack <- optim(init.values,loglik.2stagejack_CL,ClusterData=ClusterData,ClusterDataList=ClusterDataList,status=status,k=k,control=list(maxit=3000),method="Brent",lower=min(c(init.values-1,0)),upper=init.values+1)
 
 		betas_jack[k,] <- betas.k
 		theta_jack[k] <- exp(res_jack$par)
@@ -396,7 +396,7 @@ jack_2stage_coxGH <- function(data,covariates,status,time,clusters,ClusterData,C
 		
 	
 		
-		res_jackGH <- optim(init.values,loglik.2stagejack_GH,ClusterData=ClusterData,ClusterDataList=ClusterDataList,status=status,k=k,control=list(maxit=3000))
+		res_jackGH <- optim(init.values,loglik.2stagejack_GH,ClusterData=ClusterData,ClusterDataList=ClusterDataList,status=status,k=k,control=list(maxit=3000),method="Brent",lower=min(c(init.values-1,0)),upper=init.values+1)
 
 		
 		betas_jackGH[k,] <- betas.k

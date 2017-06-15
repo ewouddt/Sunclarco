@@ -523,7 +523,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		res2_weibCL <- optim(init.values,
 				loglik.2stage_CL,
 				ClusterData=ClusterData,ClusterDataList=ClusterDataList,status=status,
-				hessian=TRUE,control=list(maxit=3000))
+				hessian=TRUE,control=list(maxit=3000),method="Brent",lower=min(c(0,init.values-1)),upper=init.values+1)
 		
 
 		theta2_weibCL <- exp(res2_weibCL$par)
@@ -651,7 +651,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		# theta input
 		res2_pweCL <- optim(init.values[num_pieces+1],
 				loglik.2stage_CL,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
-				hessian=TRUE,method="BFGS")
+				hessian=TRUE,method="Brent",lower=min(c(0,init.values[num_pieces+1]-1)),upper=init.values[num_pieces+1]+1)
 
 		theta2_pweCL <- exp(res2_pweCL$par) 
 		
@@ -775,7 +775,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		
 		
 		# init.values = theta
-		res2_semiparCL <- optim(init.values,loglik.2stage_CL,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,control=list(maxit=3000))
+		res2_semiparCL <- optim(init.values,loglik.2stage_CL,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,control=list(maxit=3000),method="Brent",lower=min(c(0,init.values-1)),upper=init.values+1)
 		theta2_semiparCL <- exp(res2_semiparCL$par)
 		
 		
@@ -1036,12 +1036,13 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		
 		
 		# theta input
-#		res2_pweGH <- optim(init.values[num_pieces+1],loglik.2stage_GH,
-#				marginal=marginal,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
-#				hessian=TRUE,method="BFGS")
+
+		#res2_pweGH <- optim(init.values[num_pieces+1],loglik.2stage_GH,
+		#		marginal=marginal,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
+		#		hessian=TRUE,method="BFGS")
 		res2_pweGH <- optim(init.values[num_pieces+1],loglik.2stage_GH,
 				marginal=marginal,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
-				hessian=TRUE)
+				hessian=TRUE,control=list(maxit=3000),method="Brent",lower=min(c(init.values[num_pieces+1]-1,0)),upper=init.values[num_pieces+1]+1)
 
 		theta2_pweGH <- exp(res2_pweGH$par)/(1+exp(res2_pweGH$par)) 
 
@@ -1154,7 +1155,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		#plug marginal estimates into loglikelihood 
 		
 		# init.values = theta
-		res2_semiparGH <- optim(init.values,loglik.2stage_GH,marginal=marginal,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,control=list(maxit=3000))
+		res2_semiparGH <- optim(init.values,loglik.2stage_GH,marginal=marginal,status=status,ClusterData=ClusterData,ClusterDataList=ClusterDataList,control=list(maxit=3000),method="Brent",lower=min(c(init.values-1,0)),upper=init.values+1)
 		theta2_semiparGH <- exp(res2_semiparGH$par)/(1+exp(res2_semiparGH$par))
 		
 		if(verbose){
