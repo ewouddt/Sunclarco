@@ -303,6 +303,11 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 		names(init.values) <- rownames(out1)
 		parameters <- list(time=time,status=status,clusters=clusters,covariates=covariates,init.values=init.values,
 			marginal=marginal,copula=copula,n.piecewise=n.piecewise)
+		
+		# Add factor base levels (if necessary)
+		if(!is.null(factorbasenames)){
+		  out1 <- insert_factorbase(df=out1,factorbasenames=factorbasenames)
+		}
 	
 		out <- list(Parameters=out1,Kendall_Tau=out2,ParametersCov=out3,logllh=out4,parameter.call=parameters)
 		class(out) <- "Sunclarco"
@@ -1204,6 +1209,11 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 	parameters <- list(time=time,status=status,clusters=clusters,covariates=covariates,init.values=init.values,
 			marginal=marginal,copula=copula,n.piecewise=n.piecewise)
 	
+	# Add factor base levels (if necessary)
+	if(!is.null(factorbasenames)){
+	  out1 <- insert_factorbase(df=out1,factorbasenames=factorbasenames)
+	}
+	
 	out <- list(Parameters=out1,Kendall_Tau=out2,ParametersCov=out3,logllh=out4,parameter.call=parameters)
 	class(out) <- "Sunclarco"
 	return(out)
@@ -1232,6 +1242,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' @param n.piecewise For \code{marginal="PiecewiseExp"}, how many pieces should the Piecewise Exponential have? (Default = 20)
 #' @param init.values Initial values for parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See Details for more information.
 #' If no initial parameters are given, they will be chosen automatically (See Details for more information). 
+#' @param baselevels If one of the \code{covariates} is a factor, this parameter can be used to manually set the base level. Otherwise the first appearing level will be used as the base. This should a character vector of level names and the names of this vector should coincide with the chosen factor varialble (e.c. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).
 #' @param verbose Print some in-between results as well as computation progress.
 #' @param summary.print Logical value to print a short summary at the end of the computation.
 #' @return S3 List object
@@ -1263,25 +1274,37 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' ## ADD MORE EXAMPLES? => THESE EXAMPLES SHOULD BE USED IN VIGNETTE?
 #' }
 
-SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="Clayton",marginal="Weibull",n.piecewise=20,init.values=NULL,verbose=TRUE,summary.print=TRUE){
+SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="Clayton",marginal="Weibull",n.piecewise=20,init.values=NULL,baselevels=NULL,verbose=TRUE,summary.print=TRUE){
 	
 	### Check Dataframe
 	for(i in c(time,status,clusters,covariates)){
 		if(!(i %in% colnames(data))){stop(paste0("\"",i,"\" is not a variable of the data frame."),call.=FALSE)}
 	}
-	
-	
+  
+  ## Check for covariates and transform data if necessary
+  factor_index <- which(unlist(lapply(data,FUN=class)[covariates])=="factor")
+  if(length(factor_index)==0){factor_index <- NULL}
+  if(!is.null(factor_index)){
+    factorinfo <- factor2cont(data=data,factorcovariates=names(factor_index),baselevels=baselevels)
+    data <- cbind(data[,!(colnames(data)%in%names(factor_index))],factorinfo$extra_columns)
+    covariates <- setdiff(covariates,names(factor_index))
+    covariates <- c(covariates,factorinfo$newcovariates)
+    factorbasenames <- factorinfo$factorbasenames
+  }else{
+    factorbasenames <- NULL
+  }
+  
 	proc_start <- proc.time()
 	
 	# Check if we can add more stuff here (taken from the other functions)
 	
 	if(stage==1){
-		out <- CopulaModel_1stage(data=data,time=time,status=status,clusters=clusters,covariates=covariates,init.values=init.values,marginal=marginal,copula=copula,n.piecewise=n.piecewise,verbose=verbose)
+		out <- CopulaModel_1stage(data=data,time=time,status=status,clusters=clusters,covariates=covariates,init.values=init.values,marginal=marginal,copula=copula,n.piecewise=n.piecewise,verbose=verbose,factorbasenames=factorbasenames)
 			
 	}
 	
 	if(stage==2){
-		out <- CopulaModel_2stage(data=data,time=time,status=status,clusters=clusters,covariates=covariates,init.values=init.values,marginal=marginal,copula=copula,n.piecewise=n.piecewise,verbose=verbose)
+		out <- CopulaModel_2stage(data=data,time=time,status=status,clusters=clusters,covariates=covariates,init.values=init.values,marginal=marginal,copula=copula,n.piecewise=n.piecewise,verbose=verbose,factorbasenames=factorbasenames)
 		
 	}
 	
