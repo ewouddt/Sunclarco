@@ -25,7 +25,7 @@ NULL
 
 
 
-CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=NULL,marginal="Weibull",copula="Clayton",n.piecewise=20,verbose=FALSE){
+CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=NULL,marginal="Weibull",copula="Clayton",n.piecewise=20,verbose=FALSE,factorbasenames=NULL){
 	
 	
 	###################
@@ -318,7 +318,7 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 
 
 
-CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=NULL,marginal="Weibull",copula="Clayton",n.piecewise=20,verbose=FALSE){
+CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=NULL,marginal="Weibull",copula="Clayton",n.piecewise=20,verbose=FALSE,factorbasenames=NULL){
 	
 	###################
 	### PREPARATION ###
@@ -1242,7 +1242,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' @param n.piecewise For \code{marginal="PiecewiseExp"}, how many pieces should the Piecewise Exponential have? (Default = 20)
 #' @param init.values Initial values for parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See Details for more information.
 #' If no initial parameters are given, they will be chosen automatically (See Details for more information). 
-#' @param baselevels If one of the \code{covariates} is a factor, this parameter can be used to manually set the base level. Otherwise the first appearing level will be used as the base. This should a character vector of level names and the names of this vector should coincide with the chosen factor varialble (e.c. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).
+#' @param baselevels If one of the \code{covariates} is a factor, this parameter can be used to manually set the base level. Otherwise the first appearing level will be used as the base. This should a character vector of level names and the names of this vector should coincide with the chosen factor variable (e.g. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).
 #' @param verbose Print some in-between results as well as computation progress.
 #' @param summary.print Logical value to print a short summary at the end of the computation.
 #' @return S3 List object

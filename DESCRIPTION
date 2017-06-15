@@ -1,7 +1,7 @@
 Package: Sunclarco
 Type: Package
 Title: Survival Analysis using Copula's
-Version: 0.5.1
+Version: 0.6.0
 Date: 2017-06-15
 Author: Leen Prenen, Roel Braekers, Luc Duchateau and Ewoud De Troyer
 Maintainer: Roel Braekers <roel.braekers@uhasselt.be>

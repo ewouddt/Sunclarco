@@ -6,7 +6,8 @@
 \usage{
 SunclarcoModel(data, time, status, clusters, covariates, stage = 1,
   copula = "Clayton", marginal = "Weibull", n.piecewise = 20,
-  init.values = NULL, verbose = FALSE, summary.print = TRUE)
+  init.values = NULL, baselevels = NULL, verbose = TRUE,
+  summary.print = TRUE)
 }
 \arguments{
 \item{data}{Input dataframe containing all variables.}
@@ -29,6 +30,8 @@ SunclarcoModel(data, time, status, clusters, covariates, stage = 1,
 
 \item{init.values}{Initial values for parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See Details for more information.
 If no initial parameters are given, they will be chosen automatically (See Details for more information).}
+
+\item{baselevels}{If one of the \code{covariates} is a factor, this parameter can be used to manually set the base level. Otherwise the first appearing level will be used as the base. This should a character vector of level names and the names of this vector should coincide with the chosen factor variable (e.g. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).}
 
 \item{verbose}{Print some in-between results as well as computation progress.}
 
