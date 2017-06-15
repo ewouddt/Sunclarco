@@ -156,7 +156,7 @@ jack_2stage_pweCL <- function(data,covariates,status,time,clusters,ClusterData,C
 		}
 	}
 	if(verbose){
-	  cat("\n Jackknife ended \n")
+	  cat("\nJackknife ended \n")
 	  close(pb)
 	}
 	return(list(lambdas=lambdas2jack_pwe,theta=theta2jack_pweCL,betas=betas2jack_pwe))
@@ -239,7 +239,7 @@ jack_2stage_coxCL <- function(data,covariates,status,time,clusters,ClusterData,C
 		}
 	}
 	if(verbose){
-	  cat("\n Jackknife ended \n")
+	  cat("\nJackknife ended \n")
 	  close(pb)
 	}
 	
@@ -323,7 +323,7 @@ jack_2stage_pweGH <- function(data,covariates,status,time,clusters,ClusterData,C
 	}
 	
 	if(verbose){
-	  cat("\n Jackknife ended \n")
+	  cat("\nJackknife ended \n")
 	  close(pb)
 	}
 	return(list(lambdas=lambdas2jack_pwe,theta=theta2jack_pweGH,betas=betas2jack_pwe))
@@ -407,7 +407,7 @@ jack_2stage_coxGH <- function(data,covariates,status,time,clusters,ClusterData,C
 		}
 	}
 	if(verbose){
-	  cat("\n Jackknife ended \n")
+	  cat("\nJackknife ended \n")
 	  close(pb)
 	}
 	

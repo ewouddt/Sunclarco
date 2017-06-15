@@ -731,7 +731,8 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		
 		PH_COX <- coxph(temp_formula,data=data)
 		betas2_semipar <- as.numeric(PH_COX$coeff) 
-		stderrbetas2_semipar <- sqrt(PH_COX$var) 
+		stderrbetas2_semipar <- if(length(PH_COX$coeff)>1) sqrt(diag(PH_COX$var)) else sqrt(PH_COX$var)
+		  
 		
 		
 		newdata.zero <- as.data.frame(matrix(0,nrow=1,ncol=length(covariates)))
