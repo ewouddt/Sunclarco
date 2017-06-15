@@ -95,13 +95,6 @@ factor2cont <- function(data,factorcovariates,baselevels){
 
 insert_factorbase <- function(df,factorbasenames){
   
-  insertRow <- function(existingDF, newrow, r) {
-    existingDF <- rbind(existingDF,newrow)
-    existingDF <- existingDF[order(c(1:(nrow(existingDF)-1),r-0.5)),]
-    row.names(existingDF) <- 1:nrow(existingDF)
-    return(existingDF)  
-  }
-  
   variablenames <- sapply(factorbasenames,FUN=function(x){
     strsplit(x,split="_")[[1]][1]
   })
