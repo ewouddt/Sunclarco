@@ -39,7 +39,7 @@ loglik2.pwe_stage1jack <- function(p,num_pieces,status,time.k,Z.k,cutpoints,data
 }
 
 
-loglik.2stagejack_CL <- function(p,ClusterData,ClusterDataList,status,k,optim.method){
+loglik.2stagejack_CL <- function(p,ClusterData,ClusterDataList,status,k){
 	
 	theta  <- exp(p)
 	
@@ -60,7 +60,7 @@ loglik.2stagejack_CL <- function(p,ClusterData,ClusterDataList,status,k,optim.me
 	
 }
 
-loglik.2stagejack_GH <- function(p,ClusterData,ClusterDataList,status,k,optim.method){
+loglik.2stagejack_GH <- function(p,ClusterData,ClusterDataList,status,k){
 	
 	theta  <- exp(p)/(1+exp(p))
 

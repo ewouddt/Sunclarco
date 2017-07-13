@@ -29,7 +29,7 @@ NULL
 
 
 
-CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=NULL,marginal="Weibull",copula="Clayton",n.piecewise=20,verbose=FALSE,factorbasenames=NULL,optim.method=NULL){
+CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=NULL,marginal="Weibull",copula="Clayton",n.piecewise=20,verbose=FALSE,factorbasenames=NULL,optim.method=NULL,lower=-Inf,upper=Inf){
 	
 	
 	###################
@@ -131,12 +131,16 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	#########################
 	
 	if(marginal=="Weibull" & copula=="Clayton"){ 
+	  
+	  if(is.null(optim.method)){
+	    optim.method <- "Nelder-Mead"
+	  }
 			
 		if(verbose){cat("Stage 1 initiated. \n")}
 		res1_weibCL <- optim(init.values,
 				loglik.1stage_weibCL,
 				data=data,time=time,status=status,clusters=clusters,covariates=covariates,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
-				hessian=TRUE,control=list(maxit=3000),method=optim.method) 
+				hessian=TRUE,control=list(maxit=3000),method=optim.method,lower=lower,upper=upper) 
 		if(verbose){cat("Stage 1 finalized. \n \n")}
 		
 		# Get Estimates and put in dataframe
@@ -187,7 +191,7 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 		if(verbose){cat("Stage 1 initiated. \n")}	
 		res1_pweCL <- optim(init.values,
 				loglik.1stage_pweCL,cutpoints=cutpoints,num_pieces=num_pieces,data=data,status=status,time=time,covariates=covariates,clusters=clusters,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
-				hessian=TRUE,method=optim.method)
+				hessian=TRUE,method=optim.method,lower=lower,upper=upper)
 		
 		if(verbose){cat("Stage 1 finalized. \n \n")}
 		
@@ -226,12 +230,15 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	
 	if(marginal=="Weibull" & copula=="GH"){
 		
+	  if(is.null(optim.method)){
+	    optim.method <- "Nelder-Mead"
+	  }
 		
 		if(verbose){cat("Stage 1 initiated. \n")}
 		res1_weibGH <- optim(init.values,
 				loglik.1stage_GH,data=data,cutpoints=NULL,num_pieces=NULL,time=time,status=status,clusters=clusters,covariates=covariates,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
 				marginal=marginal,
-				hessian=TRUE,control=list(maxit=3000),method=optim.method) 
+				hessian=TRUE,control=list(maxit=3000),method=optim.method,lower=lower,upper=upper) 
 		if(verbose){cat("Stage 1 finalized. \n \n")}
 		
 		# Get Estimates and put in dataframe
@@ -278,7 +285,7 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 		res1_pweGH <- optim(init.values,
 				loglik.1stage_GH,data=data,cutpoints=cutpoints,num_pieces=num_pieces,status=status,time=time,covariates=covariates,clusters=clusters,ClusterData=ClusterData,ClusterDataList=ClusterDataList,
 				marginal=marginal,
-				hessian=TRUE,method=optim.method)
+				hessian=TRUE,method=optim.method,lower=lower,upper=upper)
 		
 		if(verbose){cat("Stage 1 finalized. \n \n")}
 		
@@ -1291,6 +1298,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' @param summary.print Logical value to print a short summary at the end of the computation.
 #' @param optim.method Method used for optimization in one-stage estimation or in second stage of two-stage estimation. Can either be \code{"Nelder-Mead"}, \code{"BFGS"}, \code{"CG"}, \code{"L-BFGS-B"}, \code{"SANN"} or \code{"Brent"}. Default in one-stage estimation is \code{"Nelder-Mead"} with Weibull margins and \code{"BFGS"} with piecewise exponential margins. Default in two-stage estimation is \code{"Brent"}, except for the combination of Gumbel copula with Weibull margins, where the default is \code{"BFGS"}. 
 #' @param optim.bounds Lower and upper bounds on the variables for the \code{"L-BFGS-B"} method, or bounds in which to search for method \code{"Brent"}. Should be a vector of length 2 in which the first element is the lower and the second the upper bound (e.g. \code{c(-Inf,Inf)}). 
+#' If \code{optim.method = NULL}, then default bounds (EXPLAIN!) will be chosen for the for default \code{optim.method}. Otherwise, \code{optim.bounds} is defaulted to \code{c(-Inf,Inf)}.
 #' @return S3 List object
 #' \itemize{
 #' \item \code{Parameters}: Data frame containing estimates and standard errors of parameters.
@@ -1349,7 +1357,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' 
 #' summary(result4)
 #' }
-SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="Clayton",marginal="Weibull",n.piecewise=20,init.values=NULL,baselevels=NULL,verbose=TRUE,summary.print=TRUE,optim.method=NULL,optim.bounds=c(-Inf,Inf)){
+SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="Clayton",marginal="Weibull",n.piecewise=20,init.values=NULL,baselevels=NULL,verbose=TRUE,summary.print=TRUE,optim.method=NULL,optim.bounds=NULL){
 	
 	## Check optimization method
 	if(!(is.null(optim.method))){
@@ -1358,6 +1366,7 @@ SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="
 			stop(paste0("Optimization method can not be ",optim.method,". It should be either \"Nelder-Mead\", \"BFGS\", \"CG\", \"L-BFGS-B\", \"SANN\" or \"Brent\""),call.=FALSE)
 		}}
   
+  if(is.null(optim.bounds)){optim.bounds <- c(-Inf,Inf)}
   if(length(optim.bounds)!=2){stop("optim.bounds should be a vector of length 2",call.=FALSE)}
   if(class(optim.bounds)!="numeric" & class(optim.bounds)!="integer"){stop("optim.bounds should be a numeric vector",call. = FALSE)}
   lower <- optim.bounds[1]
