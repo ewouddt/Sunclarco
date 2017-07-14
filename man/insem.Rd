@@ -5,7 +5,10 @@
 \title{Insemination Data}
 \format{A dataframe with 10513 rows and 5 columns.}
 \description{
-Description of the data.
-Can have multiple lines. (Note that other fields like references, authors,... can be added)
+In dairy cattle, the calving interval (the time between two calvings) should be optimally 
+between 12 and 13 months.
+One of the main factors determining the length of the calving interval is the time from parturition
+to the time of first insemination (Time variable in the data set).
+The data set includes 181 clusters (Herd variable in the data set) of different sizes.
+The parity of the cow (0 if multiparous; 1 if primiparous) is added as a covariate (Heifer in the data set).
 }
-

@@ -109,6 +109,11 @@ insert_factorbase <- function(df,factorbasenames){
     rownames(temp)[1] <- paste0("beta_",factorbasenames[i]," (base)")
     df <- rbind(df,temp)
   }
+  
+  # Push all beta's rows to the bottom (in case some continuous betas were left on top)
+  temp <- grepl(pattern="beta\\_",x=rownames(df))
+  df <- df[c(which(!temp),which(temp)),]
+
   return(df)
 }
 

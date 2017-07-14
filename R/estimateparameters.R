@@ -4,7 +4,7 @@
 ###############################################################################
 
 # STILL NEED TO MAKE CHANGES FOR GUMBEL IN GENERAL: log(x/(1-x))
-estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise,marginal,copula,stage=1){
+estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise,marginal,copula,stage=1,verbose=TRUE){
 
 	theta <- ifelse(copula=="Clayton",0.5,0.55)
 	
@@ -31,13 +31,14 @@ estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise
 			theta.temp <- ifelse(copula=="Clayton",log(theta),log(theta/(1-theta)))
 			out <- c(log(lambda),log(rho),theta.temp,betas)
 			
-			
+			if(verbose){
 			cat("Initial Parameters:\n")
 			cat("lambda =",lambda,"\n")
 			cat("rho =",rho,"\n")
 			cat("theta =",theta,"\n")
 			cat("beta's =",paste(betas,collapse="; "),"\n")
 			cat("\n")
+			}
 		}
 		
 	}
@@ -65,11 +66,13 @@ estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise
 		theta.temp <- ifelse(copula=="Clayton",log(theta),log(theta/(1-theta)))
 		out <- c(log(lambdas),theta.temp,betas)
 		
+		if(verbose){
 		cat("Initial Parameters:\n")
 		cat("lambda's =",paste(lambdas,collapse="; "),"\n")
 		cat("theta =",theta,"\n")
 		cat("beta's =",paste(betas,collapse="; "),"\n")
 		cat("\n")
+		}
 	}
 	
 	
@@ -81,10 +84,12 @@ estimate_parameters <- function(data,time,status,clusters,covariates,n.piecewise
 		if(marginal=="PiecewiseExp"){
 			return(out)
 		}else{
+		  if(verbose){
 			cat("Initial Parameters:\n")
 			cat("theta = ")
 			cat(theta,"\n")
 			cat("\n")
+		  }
 			theta.temp <- ifelse(copula=="Clayton",log(theta),log(theta/(1-theta)))
 			return(theta.temp)
 		}

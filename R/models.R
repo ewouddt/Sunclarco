@@ -45,43 +45,113 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	if(is.null(init.values)){
 		init.values <- estimate_parameters(data=data,time=time,status=status,clusters=clusters,covariates=covariates,n.piecewise=n.piecewise,marginal=marginal,copula=copula,stage=1)
 	}else{
-		# Checking correct length of given parameters
-		if(marginal=="Weibull"){
-			correct_length <- 3+length(covariates)
-		}
-		else if(marginal=="PiecewiseExp"){
-			correct_length <- n.piecewise+1+length(covariates)
-		}
-		if(length(init.values)!=correct_length){stop(paste0("Parameter 'init.values' has an incorrect length. With given parameters it should be of length ",correct_length),call.=FALSE)}
-		
-		# Checking if parameter is within bounds + transforming with log
-		if(marginal=="Weibull"){
-			if(init.values[1]<=0){stop("Lambda parameter should be strictly larger than 0.",call.=FALSE)}
-			init.values[1] <- log(init.values[1]) # lambda
-			
-			if(init.values[2]<=0){stop("Rho parameter should be strictly larger than 0.",call.=FALSE)}
-			init.values[2] <- log(init.values[2]) # rho
-			
-			if(copula=="GH"){
-				if(init.values[3]<=0 | init.values[3]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
-				init.values[3] <- log(init.values[3]/(1-init.values[3])) # theta
-			}else{
-				if(init.values[3]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
-				init.values[3] <- log(init.values[3]) # theta
-			}
-
-		}else if(marginal=="PiecewiseExp"){
-			if(sum(init.values[1:n.piecewise]<=0)>0){stop("Lambda parameter should be strictly larger than 0.",call.=FALSE)}
-			init.values[1:n.piecewise] <- log(init.values[1:n.piecewise]) # lambdas
-			
-			if(copula=="GH"){
-				if(init.values[n.piecewise+1]<=0 | init.values[n.piecewise+1]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
-				init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]/(1-init.values[n.piecewise+1])) # theta
-			}else{
-				if(init.values[n.piecewise+1]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
-				init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]) # theta
-			}
-		}
+	  
+	  # Checking correct length of given parameters
+	  if(marginal=="Weibull"){
+	    correct_length <- 3+length(covariates)
+	  }
+	  else if(marginal=="PiecewiseExp"){
+	    correct_length <- n.piecewise+1+length(covariates)
+	  }
+	  
+	  cat("Initial Parameters:\n")
+	  
+	  # All initial values are provided: convert to vector and transform
+	  if(length(unlist(init.values))==correct_length){
+	    theta_temp <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
+	    
+	    if(marginal=="Weibull"){
+	      init.values <- c(log(init.values$lambda[1]),log(init.values$rho[1]),theta_temp,init.values$beta)
+	      cat("lambda = ",init.values$lambda[1],"\n")
+	      
+	   }else if(marginal=="PiecewiseExp"){
+	      init.values <- c(log(init.values$lambda),theta_temp,init.values$beta)
+	      cat("lambda's = ",paste0(init.values$lambda,collapse="; "),"\n") 
+	   }
+	   cat("theta = ",init.values$theta[1])
+	   cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
+	   cat("\n")
+	    
+	  }else{
+	    # Not all initial values are provided:
+	    # generate all, overwrite with transformed provided values
+	    
+	    init.values.temp <- estimate_parameters(data=data,time=time,status=status,clusters=clusters,covariates=covariates,n.piecewise=n.piecewise,marginal=marginal,copula=copula,stage=1,verbose=FALSE)
+	    
+	    if(marginal=="Weibull"){
+	      if("lambda"%in%names(init.values)){
+	        init.values.temp[1] <- log(init.values$lambda[1])
+	      }
+	      if("rho"%in%names(init.values)){
+	        init.values.temp[2] <- log(init.values$rho[1])
+	      }
+	      if("theta"%in%names(init.values)){
+	        init.values.temp[3] <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
+	      }
+	      if("beta"%in%names(init.values)){
+	        init.values.temp[(4:(4+length(init.values$beta)-1))] <- init.values$beta
+	      }
+	      cat("lambda = ",exp(init.values.temp[1]),"\n")
+	      cat("rho = ",exp(init.values.temp[2]),"\n")
+	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[3])/(1+exp(init.values.temp[3])),exp(init.values.temp[3])),"\n")
+	      cat("beta's = ",paste0(init.values.temp[4:length(init.values.temp)],collapse="; "),"\n")
+	      cat("\n")
+	    
+	    }else if(marginal=="PiecewiseExp"){
+	      
+	      if("lambda"%in%names(init.values)){
+	        init.values.temp[1:(length(init.values$lambda))] <- log(init.values$lambda)
+	      }
+	      if("theta"%in%names(init.values)){
+	        init.values.temp[n.piecewise+1] <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
+	      }
+	      if("beta"%in%names(init.values)){
+	        init.values.temp[((n.piecewise+2):(n.piecewise+2+length(init.values$beta)-1))] <- init.values$beta
+	      }
+	      cat("lambda's = ",paste0(exp(init.values.temp[1:n.piecewise]),collapse="; "),"\n")
+	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[n.piecewise+1])/(1+exp(init.values.temp[n.piecewise+1])),exp(init.values.temp[n.piecewise+1])),"\n")
+	      cat("beta's = ",paste0(init.values.temp[(n.piecewise+2):length(init.values.temp)],collapse="; "),"\n")
+	      cat("\n")
+	        
+	    }
+	    
+	    init.values <- init.values.temp
+	    
+	  }
+	  
+	  
+	  
+    ## OLD INITIAL VALUE CODE (WHEN INPUT WAS STILL VECTOR!)
+		# if(length(init.values)!=correct_length){stop(paste0("Parameter 'init.values' has an incorrect length. With given parameters it should be of length ",correct_length),call.=FALSE)}
+		# 
+		# # Checking if parameter is within bounds + transforming with log
+		# if(marginal=="Weibull"){
+		# 	if(init.values[1]<=0){stop("Lambda parameter should be strictly larger than 0.",call.=FALSE)}
+		# 	init.values[1] <- log(init.values[1]) # lambda
+		# 	
+		# 	if(init.values[2]<=0){stop("Rho parameter should be strictly larger than 0.",call.=FALSE)}
+		# 	init.values[2] <- log(init.values[2]) # rho
+		# 	
+		# 	if(copula=="GH"){
+		# 		if(init.values[3]<=0 | init.values[3]>=1){stop("Theta parameter should be between 0 and 1 for copula=\"GH\".",call.=FALSE)}
+		# 		init.values[3] <- log(init.values[3]/(1-init.values[3])) # theta
+		# 	}else{
+		# 		if(init.values[3]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
+		# 		init.values[3] <- log(init.values[3]) # theta
+		# 	}
+		# 
+		# }else if(marginal=="PiecewiseExp"){
+		# 	if(sum(init.values[1:n.piecewise]<=0)>0){stop("Lambda parameter should be strictly larger than 0.",call.=FALSE)}
+		# 	init.values[1:n.piecewise] <- log(init.values[1:n.piecewise]) # lambdas
+		# 	
+		# 	if(copula=="GH"){
+		# 		if(init.values[n.piecewise+1]<=0 | init.values[n.piecewise+1]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
+		# 		init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]/(1-init.values[n.piecewise+1])) # theta
+		# 	}else{
+		# 		if(init.values[n.piecewise+1]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
+		# 		init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]) # theta
+		# 	}
+		# }
 	}
 		
 		
@@ -363,31 +433,95 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		else if(marginal=="PiecewiseExp"){
 			correct_length <- n.piecewise+1+length(covariates)
 		}
-		if(length(init.values)!=correct_length){stop(paste0("Parameter 'init.values' has an incorrect length. With given parameters it should be of length ",correct_length),call.=FALSE)}
-		
-		# Transform paramteres + check bounds
-	
-		if(marginal=="Weibull" | marginal=="Cox"){
-			if(copula=="GH"){
-				if(init.values[1]<=0 | init.values[1]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
-				init.values[1] <- log(init.values[1]/(1-init.values[1])) # theta
-			}else{
-				if(init.values[1]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
-				init.values[1] <- log(init.values[1]) # theta
-			}
-			
-		}else if(marginal=="PiecewiseExp"){
-			if(sum(init.values[1:n.piecewise]<=0)>0){stop("Lambda parameter should be strictly larger than 0.",call.=FALSE)}
-			init.values[1:n.piecewise] <- log(init.values[1:n.piecewise]) # lambdas
-			
-			if(copula=="GH"){
-				if(init.values[n.piecewise+1]<=0 | init.values[n.piecewise+1]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
-				init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]/(1-init.values[n.piecewise+1])) # theta
-			}else{
-				if(init.values[n.piecewise+1]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
-				init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]) # theta
-			}
-		}
+	  
+	  
+	  cat("Initial Parameters:\n")
+	  
+	  
+	  # All initial values are provided: convert to vector and transform
+	  if(length(unlist(init.values))==correct_length){
+	    
+	    theta_temp <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
+	    
+	    if(marginal=="Weibull" | marginal=="Cox"){
+	      init.values <- c(theta_temp)
+	      cat("theta = ",init.values$theta[1],"\n")
+	      cat("\n")
+	    }else if(marginal=="PiecewiseExp"){
+	      init.values <- c(log(init.values$lambda),theta_temp,init.values$beta)
+	      cat("lambda's = ",paste0(init.values$lambda,collapse = "; "),"\n")
+	      cat("theta = ",init.values$theta[1],"\n")
+	      cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
+	      cat("\n")
+	    }
+	    
+	    
+	  }else{
+	    
+	    # Not all initial values are provided:
+	    # generate all, overwrite with transformed provided values
+	    
+	    init.values.temp <- estimate_parameters(data=data,time=time,status=status,clusters=clusters,covariates=covariates,n.piecewise=n.piecewise,marginal=marginal,copula=copula,stage=2)
+	    
+	    if(marginal=="Weibull" | marginal=="Cox"){
+	      
+	      # Since there is only 1 parameter here, this will never happen, no need to code this tbh
+	      if("theta"%in%names(init.values)){
+	        init.values.temp[1] <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
+	      }
+	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[1])/(1+exp(init.values.temp[1])),exp(init.values.temp[1])),"\n")
+	      cat("\n")
+	    }else if(marginal=="PiecewiseExp"){
+	      
+	      if("lambda"%in%names(init.values)){
+	        init.values.temp[1:(length(init.values$lambda))] <- log(init.values$lambda)
+	      }
+	      if("theta"%in%names(init.values)){
+	        init.values.temp[n.piecewise+1] <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
+	      }
+	      if("beta"%in%names(init.values)){
+	        init.values.temp[((n.piecewise+2):(n.piecewise+2+length(init.values$beta)-1))] <- init.values$beta
+	      }
+	      cat("lambda's = ",paste0(exp(init.values.temp[1:n.piecewise]),collapse="; "),"\n")
+	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[n.piecewise+1])/(1+exp(init.values.temp[n.piecewise+1])),exp(init.values.temp[n.piecewise+1])),"\n")
+	      cat("beta's = ",paste0(init.values.temp[(n.piecewise+2):length(init.values.temp)],collapse="; "),"\n")
+	      cat("\n")
+	      
+	    }
+	    
+	    init.values <- init.values.temp
+	    
+	  }
+	  
+	  
+	  ## OLD INITIAL PARAMETERS CODE
+		# if(length(init.values)!=correct_length){stop(paste0("Parameter 'init.values' has an incorrect length. With given parameters it should be of length ",correct_length),call.=FALSE)}
+		# 
+		# # Transform paramteres + check bounds
+		# 
+		# if(marginal=="Weibull" | marginal=="Cox"){
+		# 	if(copula=="GH"){
+		# 		if(init.values[1]<=0 | init.values[1]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
+		# 		init.values[1] <- log(init.values[1]/(1-init.values[1])) # theta
+		# 	}else{
+		# 		if(init.values[1]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
+		# 		init.values[1] <- log(init.values[1]) # theta
+		# 	}
+		# 
+		# }else if(marginal=="PiecewiseExp"){
+		# 	if(sum(init.values[1:n.piecewise]<=0)>0){stop("Lambda parameter should be strictly larger than 0.",call.=FALSE)}
+		# 	init.values[1:n.piecewise] <- log(init.values[1:n.piecewise]) # lambdas
+		# 
+		# 	if(copula=="GH"){
+		# 		if(init.values[n.piecewise+1]<=0 | init.values[n.piecewise+1]>=1){stop("Theta parameter should be between 0 and 1.",call.=FALSE)}
+		# 		init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]/(1-init.values[n.piecewise+1])) # theta
+		# 	}else{
+		# 		if(init.values[n.piecewise+1]<=0){stop("Theta parameter should be strictly larger than 0.",call.=FALSE)}
+		# 		init.values[n.piecewise+1] <- log(init.values[n.piecewise+1]) # theta
+		# 	}
+		# }
+	  
+	  
 	}
 		
 
@@ -1292,7 +1426,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' @param copula Denotes which copula to use. Can be \code{"Clayton"} (default) or \code{"GH"} for Gumbel-Hougaard.
 #' @param marginal Denotes which marginal survival function to use. Can be \code{"Weibull"} (default), \code{"PiecewiseExp"} for Piecewise Exponential or \code{"Cox"} for non-parametric.
 #' @param n.piecewise For \code{marginal="PiecewiseExp"}, denotes how many pieces the Piecewise Exponential should have (Default = 20).
-#' @param init.values Initial values for parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See Details for more information. If no initial parameters are given, they will be chosen automatically (See Details for more information). 
+#' @param init.values A List object which contains the initial values for the parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See the \emph{Initial Values} Section for more information. If no initial parameters are given, they will be chosen automatically (See Details for more information). 
 #' @param baselevels Denotes the level of a categorical covariate in the \code{covariates} vector to be used as baseline. If not set, the first appearing level will be used as the baseline level. The specification should be done as a character vector and the names of this vector should coincide with the chosen factor variable (e.g. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).
 #' @param verbose Print some in-between results as well as computation progress.
 #' @param summary.print Logical value to print a short summary at the end of the computation.
@@ -1320,16 +1454,75 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' Initial values for the beta parameters from continuous covariates can be supplied as \code{c(beta_variablename=value)}
 #' Initial values for the beta parameters from categorical covariates can be supplied as \code{c(beta_variablename_level=value)}
 #' 
+#' @section Initial Values:
+#' Initial values are provided in a \code{list()} object as following:
 #' 
+#' \code{list(lambda=c(0.5),
+#'            rho=0.5,
+#'            theta=0.5
+#'            beta=c(0.5))}
+#'          
+#' \strong{Not all initial values need to be provided!} If only some of the initial values are provided, all initial parameters will be estimated (see Details),
+#' but the provided initial values will overwrite the generated ones.
 #' 
+#' Depending on the \code{stage} and \code{marginal} parameter,
+#' different initial values can be provided:
+#' \itemize{
+#' \item \emph{One-Stage}:
+#' \itemize{
+#' \item Weibull Marginal
+#' \itemize{
+#' \item \code{lambda}: Single initial value for marginal survival function.
+#' \item \code{rho}: Single initial value for marginal survival function.
+#' \item \code{theta}: Single initial value for the association parameter.
+#' \item \code{beta:}  Vector of multiple initial values for the continuous/categorical covariates.
+#' }
+#' \item Piecewise Exponential Marginal
+#' \itemize{
+#' \item \code{lambda}: Vector of multiple initial value for marginal survival function. The length of this vector should be the number of \code{n.piecewise} (see note down below).
+#' \item \code{theta}: Single initial value for the association parameter.
+#' \item \code{beta:}  Vector of multiple initial values for the continuous/categorical covariates.
+#' } 
+#' }
+#' \item \emph{Two-Stage}:
+#' \itemize{
+#' \item Weibull or Cox Marginal
+#' \itemize{
+#' \item \code{theta}: Single initial value for the association parameter.
+#' }
+#' \item Piecewise Exponential Marginal
+#' \itemize{
+#' \item \code{lambda}: Vector of multiple initial value for marginal survival function. The length of this vector should be the number of \code{n.piecewise} (see note down below).
+#' \item \code{theta}: Single initial value for the association parameter.
+#' \item \code{beta:}  Vector of multiple initial values for the continuous/categorical covariates.
+#' }
+#' } 
+#' }
 #' 
-#' SECTION 1: Which marginals + copula's are available for stage 1 and 2
-#' SECTION 2: Which parameters have to be given initially in all scenarios (stage 1 and 2) and in which order!!
-#' (note: the order will always be like this:  lambdas, rho, theta, betas)
-#' (IMPORTANT: Mention if the given initial parameters need to log transformed or not. Currently all given initial parameters will automatically be log of logit transformed)
+#' \strong{Initial Values Boundaries}
+#' \itemize{
+#' \item \eqn{\lambda>0}
+#' \item \eqn{\rho>0}
+#' \item \eqn{\theta}:
+#' \itemize{
+#' \item GH Copula: \eqn{\theta>0} & \eqn{\theta<1} 
+#' \item Clayton Copula: \eqn{\theta>0}
+#' }
+#' }
 #' 
-#' SECTION 3: How are the initial parameters chosen if done automatically?
-#' SECTION 4: How to input initial values
+#' \strong{Note on \code{lambda} and \code{beta}}
+#' 
+#' For the Piecewise Exponential marginal, multiple \eqn{\lambda}'s should be provided
+#' in the \code{lambda} slot as a vector. This vector can have a maximum length of the
+#' number of pieces there were chosen (\code{n.piecewise}). In the scenario not all \eqn{\lambda}'s
+#' are provided, only the first few \eqn{\lambda}'s are overwritten.
+#' 
+#' In the \code{beta} slot, as many \eqn{\beta}'s should be provided as there are 
+#' \code{covariates} (as well as in the same order of the \code{covariates} parameter). If one of the covariates is a
+#' categorial variable (\code{factor}), multiple \eqn{\beta}'s should be provided for
+#' a single covariate (namely the number of levels minus 1). In the scenario not all \eqn{\beta}'s
+#' are provided, only the first few \eqn{\beta}'s are overwritten.
+#' 
 #' @examples
 #' \dontrun{
 #' data("insem",package="Sunclarco")
@@ -1378,6 +1571,8 @@ SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="
 		if(!(i %in% colnames(data))){stop(paste0("\"",i,"\" is not a variable of the data frame."),call.=FALSE)}
 	}
   
+  
+
   ## Check for covariates and transform data if necessary
   factor_index <- which(unlist(lapply(data,FUN=class)[covariates])=="factor")
   if(length(factor_index)==0){factor_index <- NULL}
@@ -1390,6 +1585,60 @@ SunclarcoModel <- function(data,time,status,clusters,covariates,stage=1,copula="
   }else{
     factorbasenames <- NULL
   }
+  
+  
+  
+  # Check if initial values of correct format + check if within correct bounds
+  if(!is.null(init.values)){
+    if(class(init.values)!="list"){stop("init.values should be a list object")}
+    
+    if(marginal=="PiecewiseExp"){
+      if(!all(names(init.values)%in%c("lambda","theta","beta"))){
+        stop("init.values should only contain one or more of the following elements: 'lambda', 'theta' and 'beta'")
+      }
+      if("lambda"%in%names(init.values)){
+        if(length(init.values$lambda)>n.piecewise){stop("lambda contains too many values in the init.values parameter")}
+        if(length(init.values$lambda)<n.piecewise){warning("lambda does not contain enough values in the init.values parameter. Only part of the automatically generated initial lambda values will be overwritten.")}
+      }
+      if("beta"%in%names(init.values)){
+        if(length(init.values$beta)>length(covariates)){stop("beta contains too many values in the init.values parameter")}
+        if(length(init.values$beta)<length(covariates)){warning("beta does not contain enough values in the init.values parameter. Only part of the automatically generated initial beta values will be overwritten.")}
+      }
+      
+    }else{
+      if(stage==1){
+        if(!all(names(init.values)%in%c("lambda","rho","theta","beta"))){
+          stop("init.values should only contain one or more of the following elements: 'lambda', 'rho', 'theta' and 'beta'")
+        }
+        if("beta"%in%names(init.values)){
+          if(length(init.values$beta)>length(covariates)){stop("beta contains too many values in the init.values parameter")}
+          if(length(init.values$beta)<length(covariates)){warning("beta does not contain enough values in the init.values parameter. Only part of the automatically generated initial beta values will be overwritten.")}
+        }
+      }else if(stage==2){
+        if(!all(names(init.values)%in%c("theta"))){
+          stop("init.values should only contain one or more of the following elements: 'theta'")
+        }
+      }
+    }
+    
+    
+    # Check if parameters in init.values are within correct bounds
+    for(i in c("lambda","rho")){
+      if(i %in% names(init.values)){
+        if(any(init.values[[i]]<=0)){stop(paste0(i," parameter should be strictly larger than 0."))}
+      }
+    }
+    if("theta" %in% names(init.values)){
+      if(copula=="GH"){
+        if(init.values$theta[1]<=0 | init.values$theta[1]>=1){stop("theta parameter should be between 0 and 1 for copula=\"GH\".")}
+      }else{
+        if(init.values$theta[1]<=0){stop("theta parameter should be strictly larger than 0.")}
+      }
+    }
+    
+  }
+
+  
   
 	proc_start <- proc.time()
 	

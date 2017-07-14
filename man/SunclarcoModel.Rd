@@ -7,56 +7,137 @@
 SunclarcoModel(data, time, status, clusters, covariates, stage = 1,
   copula = "Clayton", marginal = "Weibull", n.piecewise = 20,
   init.values = NULL, baselevels = NULL, verbose = TRUE,
-  summary.print = TRUE)
+  summary.print = TRUE, optim.method = NULL, optim.bounds = NULL)
 }
 \arguments{
 \item{data}{Input dataframe containing all variables.}
 
 \item{time}{Which variable name is the time covariate?}
 
-\item{status}{Which variable name is the status covariate? (more explanation?)}
+\item{status}{The status indicator, 0=alive, 1=dead.}
 
-\item{clusters}{Which variable name is the cluster covariate?}
+\item{clusters}{The variable name describing the clusters.}
 
-\item{covariates}{Vector of 1 or more other covariates to be included in the model. If necessary a covariate should be a factor in the data frame. (NOTE: MULTIPLE COVARIATES NEED TO BE TESTED!!!)}
+\item{covariates}{A vector of one or more covariates to be included in the model. Categorical covariates should be a factor in this data frame.}
 
-\item{stage}{Can be 1 or 2 for 1 or 2 staged approached. See Details for more information.}
+\item{stage}{Denotes whether the one-stage (\code{stage=1}, default) or the two-stage (\code{stage=2}) approach should be used. See Details for more information.}
 
-\item{copula}{Which copula to user? Can either be \code{"Clayton"} or \code{"GH"} for Gumbel-Hougaard.}
+\item{copula}{Denotes which copula to use. Can be \code{"Clayton"} (default) or \code{"GH"} for Gumbel-Hougaard.}
 
-\item{marginal}{Which marginal to use? Can either be \code{"Weibull"}, \code{"PiecewiseExp"} for Piecewise Exponential or \code{"Cox"} for Cox Regression.}
+\item{marginal}{Denotes which marginal survival function to use. Can be \code{"Weibull"} (default), \code{"PiecewiseExp"} for Piecewise Exponential or \code{"Cox"} for non-parametric.}
 
-\item{n.piecewise}{For \code{marginal="PiecewiseExp"}, how many pieces should the Piecewise Exponential have? (Default = 20)}
+\item{n.piecewise}{For \code{marginal="PiecewiseExp"}, denotes how many pieces the Piecewise Exponential should have (Default = 20).}
 
-\item{init.values}{Initial values for parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See Details for more information.
-If no initial parameters are given, they will be chosen automatically (See Details for more information).}
+\item{init.values}{A List object which contains the initial values for the parameters. This depends on the choice of the parameters \code{stage}, \code{copula} and \code{marginal}. See the \emph{Initial Values} Section for more information. If no initial parameters are given, they will be chosen automatically (See Details for more information).}
 
-\item{baselevels}{If one of the \code{covariates} is a factor, this parameter can be used to manually set the base level. Otherwise the first appearing level will be used as the base. This should a character vector of level names and the names of this vector should coincide with the chosen factor variable (e.g. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).}
+\item{baselevels}{Denotes the level of a categorical covariate in the \code{covariates} vector to be used as baseline. If not set, the first appearing level will be used as the baseline level. The specification should be done as a character vector and the names of this vector should coincide with the chosen factor variable (e.g. \code{c(disease='Other',region='Region1')} in which \code{disease} and \code{region} are factor covariates).}
 
 \item{verbose}{Print some in-between results as well as computation progress.}
 
 \item{summary.print}{Logical value to print a short summary at the end of the computation.}
+
+\item{optim.method}{Method used for optimization in one-stage estimation or in second stage of two-stage estimation. Can either be \code{"Nelder-Mead"}, \code{"BFGS"}, \code{"CG"}, \code{"L-BFGS-B"}, \code{"SANN"} or \code{"Brent"}. Default in one-stage estimation is \code{"Nelder-Mead"} with Weibull margins and \code{"BFGS"} with piecewise exponential margins. Default in two-stage estimation is \code{"Brent"}, except for the combination of Gumbel copula with Weibull margins, where the default is \code{"BFGS"}.}
+
+\item{optim.bounds}{Lower and upper bounds on the variables for the \code{"L-BFGS-B"} method, or bounds in which to search for method \code{"Brent"}. Should be a vector of length 2 in which the first element is the lower and the second the upper bound (e.g. \code{c(-Inf,Inf)}). 
+If \code{optim.method = NULL} and \code{"Brent"} is used, then default bounds (EXPLAIN!) will be chosen. Otherwise, \code{optim.bounds} is defaulted to \code{c(-Inf,Inf)}.}
 }
 \value{
 S3 List object
-\item{Parameters}{Data frame containing estimates and standard errors of parameters.}
-\item{Kendall_Tau}{Vector containing estimate and standard error of Kendall's Tau.}
-\item{ParametersCov}{If available, covariance matrix of the parameters. For 2-stage approaches this is only available for the Weibull marginal.}
-\item{logllh}{The log-likelihood value.}
-\item{parameter.call}{A list containing all arguments given to the function, as well as the initial parameter values and the elapsed time.}
+\itemize{
+\item \code{Parameters}: Data frame containing estimates and standard errors of parameters.
+\item \code{Kendall_Tau}: Vector containing estimate and standard error of Kendall's Tau.
+\item \code{ParametersCov}: If available, covariance matrix of the parameters. For 2-stage approaches this is only available for the Weibull marginal.
+\item \code{logllh}: The log-likelihood value.
+\item \code{parameter.call}: A list containing all arguments given to the function, as well as the initial parameter values and the elapsed time.
+}
 }
 \description{
-Model for Survival Analysis of Unbalanced Clusters using Archimedes Copula's
- (Note: you can also add other fields like references, authors,... See which ones are necessary)
+Model for Survival Analysis of Unbalanced Clusters using Archimedes Copula's.
 }
 \details{
-WRITE DIFFERENT SECTIONS
-SECTION 1: Which marginals + copula's are available for stage 1 and 2
-SECTION 2: Which parameters have to be given initially in all scenarios (stage 1 and 2) and in which order!!
-(note: the order will always be like this:  lambdas, rho, theta, betas)
-(IMPORTANT: Mention if the given initial parameters need to log transformed or not. Currently all given initial parameters will automatically be log of logit transformed)
-SECTION 3: How are the initial parameters chosen if done automatically?
+All copula models, regardless the choice of the marginal survival function, can be fitted with the two-stage approach.
+The one-stage approach, however, is only available for the \code{"Weibull"} and \code{"PiecewiseExp"} marginal survival functions choice.
+The one-stage approach is preferred as it leads to less biased estimates in the case of small sample sizes.  
+When no initial values for the parameters are given, initial values for the optimisation procedure will be derived in the following way.
+Initial values for the marginal survival functions are obtained by estimating the parameters marginally, i.e., without taking into consideration the copula function.
+In the two-stage approach, these estimates are fixed, whereas in the one-stage approach, they are parameters in the optimisation.
+The association parameter is set arbitrarily to 0.5 for \code{"Clayton"} 0.55 for \code{"GH"}.
+An initial value for the association parameter can be supplied as \code{c(theta=value)} 
+Initial values for the marginal survival function parameters can only be supplied for the \code{"Weibull"} choice as \code{c(lambda=value,rho=value)}
+Initial values for the beta parameters from continuous covariates can be supplied as \code{c(beta_variablename=value)}
+Initial values for the beta parameters from categorical covariates can be supplied as \code{c(beta_variablename_level=value)}
 }
+\section{Initial Values}{
+
+Initial values are provided in a \code{list()} object as following:
+
+\code{list(lambda=c(0.5),
+           rho=0.5,
+           theta=0.5
+           beta=c(0.5))}
+         
+\strong{Not all initial values need to be provided!} If only some of the initial values are provided, all initial parameters will be estimated (see Details),
+but the provided initial values will overwrite the generated ones.
+
+Depending on the \code{stage} and \code{marginal} parameter,
+different initial values can be provided:
+\itemize{
+\item \emph{One-Stage}:
+\itemize{
+\item Weibull Marginal
+\itemize{
+\item \code{lambda}: Single initial value for marginal survival function.
+\item \code{rho}: Single initial value for marginal survival function.
+\item \code{theta}: Single initial value for the association parameter.
+\item \code{beta:}  Vector of multiple initial values for the continuous/categorical covariates.
+}
+\item Piecewise Exponential Marginal
+\itemize{
+\item \code{lambda}: Vector of multiple initial value for marginal survival function. The length of this vector should be the number of \code{n.piecewise} (see note down below).
+\item \code{theta}: Single initial value for the association parameter.
+\item \code{beta:}  Vector of multiple initial values for the continuous/categorical covariates.
+} 
+}
+\item \emph{Two-Stage}:
+\itemize{
+\item Weibull or Cox Marginal
+\itemize{
+\item \code{theta}: Single initial value for the association parameter.
+}
+\item Piecewise Exponential Marginal
+\itemize{
+\item \code{lambda}: Vector of multiple initial value for marginal survival function. The length of this vector should be the number of \code{n.piecewise} (see note down below).
+\item \code{theta}: Single initial value for the association parameter.
+\item \code{beta:}  Vector of multiple initial values for the continuous/categorical covariates.
+}
+} 
+}
+
+\strong{Initial Values Boundaries}
+\itemize{
+\item \eqn{\lambda>0}
+\item \eqn{\rho>0}
+\item \eqn{\theta}:
+\itemize{
+\item GH Copula: \eqn{\theta>0} & \eqn{\theta<1} 
+\item Clayton Copula: \eqn{\theta>0}
+}
+}
+
+\strong{Note on \code{lambda} and \code{beta}}
+
+For the Piecewise Exponential marginal, multiple \eqn{\lambda}'s should be provided
+in the \code{lambda} slot as a vector. This vector can have a maximum length of the
+number of pieces there were chosen (\code{n.piecewise}). In the scenario not all \eqn{\lambda}'s
+are provided, only the first few \eqn{\lambda}'s are overwritten.
+
+In the \code{beta} slot, as many \eqn{\beta}'s should be provided as there are 
+\code{covariates} (as well as in the same order of the \code{covariates} parameter). If one of the covariates is a
+categorial variable (\code{factor}), multiple \eqn{\beta}'s should be provided for
+a single covariate (namely the number of levels minus 1). In the scenario not all \eqn{\beta}'s
+are provided, only the first few \eqn{\beta}'s are overwritten.
+}
+
 \examples{
 \dontrun{
 data("insem",package="Sunclarco")
@@ -68,10 +149,23 @@ summary(result1)
 
 result2 <- SunclarcoModel(data=insem,time="Time",status="Status",
                           clusters="Herd",covariates="Heifer",
-                          stage=2,copula="Clayton",marginal="Cox",
-                          verbose=TRUE)
+                          stage=1,copula="GH",marginal="PiecewiseExp")
 summary(result2)
-## ADD MORE EXAMPLES? => THESE EXAMPLES SHOULD BE USED IN VIGNETTE?
-}
-}
 
+
+result3 <- SunclarcoModel(data=kidney,time="time",status="status",
+                          clusters="id",covariates="sex",
+                          stage=2,copula="Clayton",marginal="Weibull")
+
+summary(result3)
+
+result4 <- SunclarcoModel(data=kidney,time="time",status="status",
+                          clusters="id",covariates="sex",
+                          stage=2,copula="Clayton",marginal="Cox")
+
+summary(result4)
+}
+}
+\references{
+Prenen L, Braekers R, Duchateau L (2017). Extending the Archimedean copula methodology to model multivariate survival data grouped in clusters of variable size. Journal of the Royal Statistical Society, 6, 1-24.
+}
