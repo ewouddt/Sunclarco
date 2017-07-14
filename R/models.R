@@ -61,16 +61,18 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	    theta_temp <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
 	    
 	    if(marginal=="Weibull"){
-	      init.values <- c(log(init.values$lambda[1]),log(init.values$rho[1]),theta_temp,init.values$beta)
+	      init.values.temp <- c(log(init.values$lambda[1]),log(init.values$rho[1]),theta_temp,init.values$beta)
 	      cat("lambda = ",init.values$lambda[1],"\n")
 	      
 	   }else if(marginal=="PiecewiseExp"){
-	      init.values <- c(log(init.values$lambda),theta_temp,init.values$beta)
+	      init.values.temp <- c(log(init.values$lambda),theta_temp,init.values$beta)
 	      cat("lambda's = ",paste0(init.values$lambda,collapse="; "),"\n") 
 	   }
 	   cat("theta = ",init.values$theta[1])
 	   cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
 	   cat("\n")
+	   
+	   init.values <- init.values.temp
 	    
 	  }else{
 	    # Not all initial values are provided:
@@ -444,17 +446,18 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 	    theta_temp <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
 	    
 	    if(marginal=="Weibull" | marginal=="Cox"){
-	      init.values <- c(theta_temp)
+	      init.values.temp <- c(theta_temp)
 	      cat("theta = ",init.values$theta[1],"\n")
 	      cat("\n")
 	    }else if(marginal=="PiecewiseExp"){
-	      init.values <- c(log(init.values$lambda),theta_temp,init.values$beta)
+	      init.values.temp <- c(log(init.values$lambda),theta_temp,init.values$beta)
 	      cat("lambda's = ",paste0(init.values$lambda,collapse = "; "),"\n")
 	      cat("theta = ",init.values$theta[1],"\n")
 	      cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
 	      cat("\n")
 	    }
 	    
+	    init.values <- init.values.temp
 	    
 	  }else{
 	    
