@@ -68,7 +68,7 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	      init.values.temp <- c(log(init.values$lambda),theta_temp,init.values$beta)
 	      cat("lambda's = ",paste0(init.values$lambda,collapse="; "),"\n") 
 	   }
-	   cat("theta = ",init.values$theta[1])
+	   cat("theta = ",init.values$theta[1],"\n")
 	   cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
 	   cat("\n")
 	   
