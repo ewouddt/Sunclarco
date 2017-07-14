@@ -54,7 +54,7 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	    correct_length <- n.piecewise+1+length(covariates)
 	  }
 	  
-	  cat("Initial Parameters:\n")
+	 if(verbose){cat("Initial Parameters:\n")}
 	  
 	  # All initial values are provided: convert to vector and transform
 	  if(length(unlist(init.values))==correct_length){
@@ -62,15 +62,17 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	    
 	    if(marginal=="Weibull"){
 	      init.values.temp <- c(log(init.values$lambda[1]),log(init.values$rho[1]),theta_temp,init.values$beta)
-	      cat("lambda = ",init.values$lambda[1],"\n")
+	      if(verbose){cat("lambda = ",init.values$lambda[1],"\n")}
 	      
 	   }else if(marginal=="PiecewiseExp"){
 	      init.values.temp <- c(log(init.values$lambda),theta_temp,init.values$beta)
-	      cat("lambda's = ",paste0(init.values$lambda,collapse="; "),"\n") 
+	      if(verbose){cat("lambda's = ",paste0(init.values$lambda,collapse="; "),"\n")}
 	   }
+	   if(verbose){ 
 	   cat("theta = ",init.values$theta[1],"\n")
 	   cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
 	   cat("\n")
+	   }
 	   
 	   init.values <- init.values.temp
 	    
@@ -93,11 +95,13 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	      if("beta"%in%names(init.values)){
 	        init.values.temp[(4:(4+length(init.values$beta)-1))] <- init.values$beta
 	      }
+	      if(verbose){
 	      cat("lambda = ",exp(init.values.temp[1]),"\n")
 	      cat("rho = ",exp(init.values.temp[2]),"\n")
 	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[3])/(1+exp(init.values.temp[3])),exp(init.values.temp[3])),"\n")
 	      cat("beta's = ",paste0(init.values.temp[4:length(init.values.temp)],collapse="; "),"\n")
 	      cat("\n")
+	      }
 	    
 	    }else if(marginal=="PiecewiseExp"){
 	      
@@ -110,10 +114,12 @@ CopulaModel_1stage <- function(data,time,status,clusters,covariates,init.values=
 	      if("beta"%in%names(init.values)){
 	        init.values.temp[((n.piecewise+2):(n.piecewise+2+length(init.values$beta)-1))] <- init.values$beta
 	      }
+	      if(verbose){
 	      cat("lambda's = ",paste0(exp(init.values.temp[1:n.piecewise]),collapse="; "),"\n")
 	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[n.piecewise+1])/(1+exp(init.values.temp[n.piecewise+1])),exp(init.values.temp[n.piecewise+1])),"\n")
 	      cat("beta's = ",paste0(init.values.temp[(n.piecewise+2):length(init.values.temp)],collapse="; "),"\n")
 	      cat("\n")
+	      }
 	        
 	    }
 	    
@@ -417,7 +423,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 	###################
 	
 
-  	## Check if combination possible
+  ## Check if combination possible
 	if(!(marginal %in% c("Weibull","PiecewiseExp","Cox"))){stop(paste0("Parameter 'marginal' can not be ",marginal,". It should be either \"Weibull\" or \"PiecewiseExp\" for 2-stage approach"),call.=FALSE)}
 	if(!(copula %in% c("Clayton","GH"))){stop(paste0("Parameter 'copula' can not be ",copula,". It should be either \"Clayton\" or \"GH\" for 2-stage approach"),call.=FALSE)}
 	
@@ -437,7 +443,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 		}
 	  
 	  
-	  cat("Initial Parameters:\n")
+	  if(verbose){cat("Initial Parameters:\n")}
 	  
 	  
 	  # All initial values are provided: convert to vector and transform
@@ -447,14 +453,18 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 	    
 	    if(marginal=="Weibull" | marginal=="Cox"){
 	      init.values.temp <- c(theta_temp)
+	      if(verbose){
 	      cat("theta = ",init.values$theta[1],"\n")
 	      cat("\n")
+	      }
 	    }else if(marginal=="PiecewiseExp"){
 	      init.values.temp <- c(log(init.values$lambda),theta_temp,init.values$beta)
+	      if(verbose){
 	      cat("lambda's = ",paste0(init.values$lambda,collapse = "; "),"\n")
 	      cat("theta = ",init.values$theta[1],"\n")
 	      cat("beta's = ",paste0(init.values$beta,collapse="; "),"\n")
 	      cat("\n")
+	      }
 	    }
 	    
 	    init.values <- init.values.temp
@@ -472,8 +482,10 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 	      if("theta"%in%names(init.values)){
 	        init.values.temp[1] <- ifelse(copula=="GH",log(init.values$theta[1]/(1-init.values$theta[1])),log(init.values$theta[1]))
 	      }
+	      if(verbose){
 	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[1])/(1+exp(init.values.temp[1])),exp(init.values.temp[1])),"\n")
 	      cat("\n")
+	      }
 	    }else if(marginal=="PiecewiseExp"){
 	      
 	      if("lambda"%in%names(init.values)){
@@ -485,10 +497,12 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 	      if("beta"%in%names(init.values)){
 	        init.values.temp[((n.piecewise+2):(n.piecewise+2+length(init.values$beta)-1))] <- init.values$beta
 	      }
+	      if(verbose){
 	      cat("lambda's = ",paste0(exp(init.values.temp[1:n.piecewise]),collapse="; "),"\n")
 	      cat("theta = ",ifelse(copula=="GH",exp(init.values.temp[n.piecewise+1])/(1+exp(init.values.temp[n.piecewise+1])),exp(init.values.temp[n.piecewise+1])),"\n")
 	      cat("beta's = ",paste0(init.values.temp[(n.piecewise+2):length(init.values.temp)],collapse="; "),"\n")
 	      cat("\n")
+	      }
 	      
 	    }
 	    
