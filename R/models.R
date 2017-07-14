@@ -1449,7 +1449,7 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' @param summary.print Logical value to print a short summary at the end of the computation.
 #' @param optim.method Method used for optimization in one-stage estimation or in second stage of two-stage estimation. Can either be \code{"Nelder-Mead"}, \code{"BFGS"}, \code{"CG"}, \code{"L-BFGS-B"}, \code{"SANN"} or \code{"Brent"}. Default in one-stage estimation is \code{"Nelder-Mead"} with Weibull margins and \code{"BFGS"} with piecewise exponential margins. Default in two-stage estimation is \code{"Brent"}, except for the combination of Gumbel copula with Weibull margins, where the default is \code{"BFGS"}. 
 #' @param optim.bounds Lower and upper bounds on the variables for the \code{"L-BFGS-B"} method, or bounds in which to search for method \code{"Brent"}. Should be a vector of length 2 in which the first element is the lower and the second the upper bound (e.g. \code{c(-Inf,Inf)}). 
-#' If \code{optim.method = NULL} and \code{"Brent"} is used, then default bounds (EXPLAIN!) will be chosen. Otherwise, \code{optim.bounds} is defaulted to \code{c(-Inf,Inf)}.
+#' If \code{optim.method = NULL} and \code{"Brent"} is used, then default bounds will be chosen. Otherwise, \code{optim.bounds} is defaulted to \code{c(-Inf,Inf)}.
 #' @return S3 List object
 #' \itemize{
 #' \item \code{Parameters}: Data frame containing estimates and standard errors of parameters.
