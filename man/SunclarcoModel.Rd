@@ -133,7 +133,7 @@ are provided, only the first few \eqn{\lambda}'s are overwritten.
 
 In the \code{beta} slot, as many \eqn{\beta}'s should be provided as there are 
 \code{covariates} (as well as in the same order of the \code{covariates} parameter). If one of the covariates is a
-categorial variable (\code{factor}), multiple \eqn{\beta}'s should be provided for
+categorical variable (\code{factor}), multiple \eqn{\beta}'s should be provided for
 a single covariate (namely the number of levels minus 1). In the scenario not all \eqn{\beta}'s
 are provided, only the first few \eqn{\beta}'s are overwritten.
 }
