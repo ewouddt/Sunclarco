@@ -1,3 +1,4 @@
 ## Submission Notes
 
-* First Submission
+* Second submission
+* Implemented suggested changes to the DESCRIPTION file
