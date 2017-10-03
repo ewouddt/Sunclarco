@@ -1541,6 +1541,18 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' are provided, only the first few \eqn{\beta}'s are overwritten.
 #' 
 #' @examples
+#' 
+#' 
+#' \dontshow{
+#' data("insem",package="Sunclarco")
+#' set.seed(1)
+#' result1 <- SunclarcoModel(data=insem[sample(1:nrow(insem),1500,replace=FALSE),],
+#'                           time="Time",status="Status", clusters="Herd",
+#'                           covariates="Heifer", stage=1,copula="Clayton",
+#'                           marginal="Weibull")
+#' }
+#' 
+#' 
 #' \dontrun{
 #' data("insem",package="Sunclarco")
 #' result1 <- SunclarcoModel(data=insem,time="Time",status="Status",
