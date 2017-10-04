@@ -143,11 +143,10 @@ are provided, only the first few \eqn{\beta}'s are overwritten.
 
 \dontshow{
 data("insem",package="Sunclarco")
-set.seed(1)
-result1 <- SunclarcoModel(data=insem[sample(1:nrow(insem),1500,replace=FALSE),],
-                          time="Time",status="Status", clusters="Herd",
-                          covariates="Heifer", stage=1,copula="Clayton",
-                          marginal="Weibull")
+insemsub <- insem[insem$Herd<=10,]
+result1 <- SunclarcoModel(data=insemsub,time="Time",status="Status",
+                          clusters="Herd",covariates="Heifer",
+                          stage=1,copula="Clayton",marginal="Weibull")
 }
 
 
