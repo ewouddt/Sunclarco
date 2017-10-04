@@ -139,17 +139,13 @@ are provided, only the first few \eqn{\beta}'s are overwritten.
 }
 
 \examples{
-
-
 \dontshow{
 data("insem",package="Sunclarco")
 insemsub <- insem[insem$Herd<=10,]
 result1 <- SunclarcoModel(data=insemsub,time="Time",status="Status",
                           clusters="Herd",covariates="Heifer",
                           stage=1,copula="Clayton",marginal="Weibull")
-}
-
-
+} 
 \dontrun{
 data("insem",package="Sunclarco")
 result1 <- SunclarcoModel(data=insem,time="Time",status="Status",

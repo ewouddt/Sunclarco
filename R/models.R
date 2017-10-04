@@ -1540,18 +1540,14 @@ CopulaModel_2stage <- function(data,time,status,clusters,covariates,init.values=
 #' a single covariate (namely the number of levels minus 1). In the scenario not all \eqn{\beta}'s
 #' are provided, only the first few \eqn{\beta}'s are overwritten.
 #' 
-#' @examples
-#' 
-#' 
+#' @examples 
 #' \dontshow{
 #' data("insem",package="Sunclarco")
 #' insemsub <- insem[insem$Herd<=10,]
 #' result1 <- SunclarcoModel(data=insemsub,time="Time",status="Status",
 #'                           clusters="Herd",covariates="Heifer",
 #'                           stage=1,copula="Clayton",marginal="Weibull")
-#' }
-#' 
-#' 
+#' } 
 #' \dontrun{
 #' data("insem",package="Sunclarco")
 #' result1 <- SunclarcoModel(data=insem,time="Time",status="Status",
