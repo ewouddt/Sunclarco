@@ -1,4 +1,3 @@
 ## Submission Notes
 
-* Second submission
-* Implemented suggested changes to the DESCRIPTION file
+* Re-submission: Added dontshow example to SunclarcoModel
